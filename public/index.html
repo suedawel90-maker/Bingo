@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Telegram Bingo Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #f4f5f7);
+      --text-color: var(--tg-theme-text-color, #222222);
+      --primary: #0088cc;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 16px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .balance-badge {
+      background: #e1f5fe;
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+    #timer-banner {
+      text-align: center;
+      background: var(--primary);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .calling-container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .current-number-box { text-align: center; }
+    .big-number { font-size: 42px; font-weight: 900; color: var(--primary); }
+    .called-list-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+    .number-ball {
+      min-width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #eef4f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .number-ball.latest {
+      background: var(--primary);
+      color: #fff;
+      transform: scale(1.15);
+    }
+    .card-tabs-container {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .card-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #e0e0e0;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .card-tab.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .bingo-card {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      background: #fff;
+      padding: 12px;
+      border-radius: 16px;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+    .cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f4f5f7;
+      border-radius: 10px;
+      font-weight: 800;
+      border: 2px solid #e0e0e0;
+      transition: all 0.2s;
+    }
+    .cell.free-space { background: #fff3cd; color: #856404; font-size: 10px; }
+    .cell.marked { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .cell.just-marked { animation: popMark 0.4s ease-out; }
+    @keyframes popMark {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.25); background: #28a745; }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h3 id="user-name">Player</h3>
+    <div class="balance-badge"><span id="user-balance">50</span> ETB</div>
+  </div>
+
+  <div id="timer-banner">⏱️ Select your cards! 60s remaining</div>
+
+  <div class="calling-container">
+    <div class="current-number-box">
+      <div style="font-size: 11px; color: #888;">CURRENT NUMBER</div>
+      <div id="current-number" class="big-number">--</div>
+    </div>
+    <div style="font-size: 11px; color: #888; margin-top: 8px;">
+      CALLED NUMBERS (<span id="called-count">0</span>/75)
+    </div>
+    <div id="called-numbers-list" class="called-list-scroll"></div>
+  </div>
+
+  <div id="card-tabs" class="card-tabs-container"></div>
+  <div id="player-card-container" class="bingo-card"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
